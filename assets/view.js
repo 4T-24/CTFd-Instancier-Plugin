@@ -25,10 +25,12 @@ CTFd._internal.challenge.setup = function() {
     instanciate_button = CTFd.lib.$("#instanciate-button");
     uninstanciate_button = CTFd.lib.$("#uninstanciate-button");
     loading = CTFd.lib.$("#instanciate-loading");
+    deleting = CTFd.lib.$("#instanciate-deleting");
     loaded = CTFd.lib.$("#instanciate-loaded");
     instructions = CTFd.lib.$("#instance-instructions");
 
     loading.hide();
+    deleting.hide();
     loaded.hide();
 
     CTFd._internal.challenge.update_instance(true);
@@ -87,18 +89,27 @@ CTFd._internal.challenge.status_update = function(response) {
         case "not_instanciated":
             instanciate_button_container.show();
             loading.hide();
+            deleting.hide();
             loaded.hide();
             break;
         case "instanciating":
             instanciate_button_container.hide();
             loading.show();
+            deleting.hide();
+            loaded.hide();
+            break;
+        case "deleting":
+            instanciate_button_container.hide();
+            loading.hide();
+            deleting.show();
             loaded.hide();
             break;
         case "instanciated":
             instanciate_button_container.hide();
             loading.hide();
+            deleting.hide();
             loaded.show();
-            instructions.text("ceci est un exemple d'instruction pour ce connecter");
+            instructions.text(response.data.instructions);
             break;
     }
 };

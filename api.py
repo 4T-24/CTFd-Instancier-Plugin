@@ -35,14 +35,16 @@ from CTFd.utils.config.visibility import (
 from requests import get, post, delete
 from urllib.parse import urljoin
 
+from .models import InstanciatedChallenge
+
 def api_routes(app):
     instancer_token = app.config.get("4TS_INSTANCER_TOKEN")
     
     
     @app.route("/api/v1/challenges/<challenge_id>/instance", methods=['GET', 'POST', 'DELETE'])
-    # @check_challenge_visibility
-    # @during_ctf_time_only
-    # @require_verified_emails
+    @check_challenge_visibility
+    @during_ctf_time_only
+    @require_verified_emails
     def handle_routes(challenge_id):
         if request.method == 'GET':
             return get_instance(challenge_id)
@@ -81,9 +83,12 @@ def api_routes(app):
         if config.is_teams_mode():
             team = get_current_team()
             instance_id = team.id
+        
+        # Get instanciated Challenge
+        instanciated_challenge = InstanciatedChallenge.query.filter_by(id=challenge_id).first()
 
         # Send request to instancer service at /api/v1/instanciate
-        uri = urljoin(app.config.get("4TS_INSTANCER_BASE_URL"), f"/p9yv9f6/api/v1/{challenge_id}/{instance_id}")
+        uri = urljoin(app.config.get("4TS_INSTANCER_BASE_URL"), f"/api/v1/{instanciated_challenge.challenge_slug}/{instance_id}")
         response = get(uri, headers={"Authorization": f"Bearer {instancer_token}"})
 
         return {"success": True, "data": response.json()}
@@ -91,7 +96,6 @@ def api_routes(app):
 
     def start_instance(challenge_id):
         if not authed():
-            print("Not authed")
             abort(403)
 
         if is_admin():
@@ -119,9 +123,12 @@ def api_routes(app):
             team = get_current_team()
             instance_id = team.id
 
+        # Get instanciated Challenge
+        instanciated_challenge = InstanciatedChallenge.query.filter_by(id=challenge_id).first()
+        
         # Send request to instancer service at /api/v1/instanciate
         response = post(
-            urljoin(app.config.get("4TS_INSTANCER_BASE_URL"), f"/p9yv9f6/api/v1/{challenge_id}/{instance_id}"),
+            urljoin(app.config.get("4TS_INSTANCER_BASE_URL"), f"/api/v1/{instanciated_challenge.challenge_slug}/{instance_id}"),
             headers={"Authorization": f"Bearer {instancer_token}"},
         ).json()
 
@@ -157,9 +164,12 @@ def api_routes(app):
             team = get_current_team()
             instance_id = team.id
 
+        # Get instanciated Challenge
+        instanciated_challenge = InstanciatedChallenge.query.filter_by(id=challenge_id).first()
+        
         # Send request to instancer service at /api/v1/instanciate
         response = delete(
-            urljoin(app.config.get("4TS_INSTANCER_BASE_URL"), f"/api/v1/{challenge_id}/{instance_id}"),
+            urljoin(app.config.get("4TS_INSTANCER_BASE_URL"), f"/api/v1/{instanciated_challenge.challenge_slug}/{instance_id}"),
             headers={"Authorization": f"Bearer {instancer_token}"},
         ).json()
 
