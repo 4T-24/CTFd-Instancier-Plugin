@@ -62,9 +62,6 @@ CTFd._internal.challenge.setup = function() {
         })
     });
 
-    // Get submit button
-    var submit_button = CTFd.lib.$("#challenge-submit");
-
     window.instance_challenge_submit = function(response) {
         if (response.data.status === "correct") {
             CTFd.fetch("/api/v1/challenges/" + challenge_id + "/instance", {
@@ -78,9 +75,6 @@ CTFd._internal.challenge.setup = function() {
             })
         }
     }
-
-    // Change @click.debounce.500ms from submitChallenge to submitChallengeInstance
-    submit_button.attr("x-on:click.debounce.500ms", "submitChallenge().then(() => window.instance_challenge_submit(response));");
 };
 
 CTFd._internal.challenge.update_instance = function(force) {
