@@ -1,0 +1,19 @@
+{% extends "admin/challenges/create.html" %} {% block header %}
+<div class="alert alert-secondary" role="alert">
+    Instanciated challenges are challenges instanciated by 4T$ Instancier. They are fixed value at the moment.
+</div>
+{% endblock %} {% block value %}
+<div class="form-group">
+    <label for="value">Value<br>
+		<small class="form-text text-muted">
+			This is how many points the challenge is worth.
+		</small>
+	</label>
+    <input type="number" class="form-control" name="value" placeholder="Enter value" required>
+</div>
+<div class="form-group">
+    <label for="value">Challenge Slug (for instancier)</label>
+    <input type="text" class="form-control" name="challenge_slug" placeholder="Enter challenge slug" required>
+</div>
+{% endblock %} {% block type %}
+<input type="hidden" value="instanciated" name="type" id="chaltype"> {% endblock %}

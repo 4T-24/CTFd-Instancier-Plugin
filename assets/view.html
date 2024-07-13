@@ -1,0 +1,38 @@
+{% extends "challenge.html" %}{% block description %}
+
+<div class="container p-4">
+    <div class="row justify-content-center">
+        <div class="col-12">
+            {{ challenge.html }}
+        </div>
+
+        <div class="d-flex justify-content-center">
+            <div id="instanciate-button-container">
+                <!-- Add button to instanciate -->
+                <button id="instanciate-button" class="btn btn-primary">
+                    Instanciate
+                </button>
+            </div>
+            <div id="instanciate-loading">
+                <div class="d-flex flex-column align-items-center">
+                    <!-- Replace button with a loading spinner -->
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    Instanciating...
+                </div>
+
+            </div>
+            <div id="instanciate-loaded">
+                <div class="d-flex flex-column align-items-center">
+                    <code id="instance-instructions"></code>
+                    <button id="uninstanciate-button" class="btn btn-primary">
+                        Delete instance
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
