@@ -61,6 +61,26 @@ CTFd._internal.challenge.setup = function() {
             CTFd._internal.challenge.status_update(json);
         })
     });
+
+    // Get submit button
+    var submit_button = CTFd.lib.$("#challenge-submit");
+
+    window.instance_challenge_submit = function(response) {
+        if (response.data.status === "correct") {
+            CTFd.fetch("/api/v1/challenges/" + challenge_id + "/instance", {
+                method: "DELETE",
+                headers: {
+                    Accept: "application/json",
+                }
+            }).then(async function(response) {
+                json = await response.json();
+                CTFd._internal.challenge.status_update(json);
+            })
+        }
+    }
+
+    // Change @click.debounce.500ms from submitChallenge to submitChallengeInstance
+    submit_button.attr("x-on:click.debounce.500ms", "submitChallenge().then(() => window.instance_challenge_submit(response));");
 };
 
 CTFd._internal.challenge.update_instance = function(force) {
@@ -112,30 +132,4 @@ CTFd._internal.challenge.status_update = function(response) {
             instructions.text(response.data.instructions);
             break;
     }
-};
-
-CTFd._internal.challenge.submit = function(preview) {
-    var challenge_id = parseInt(CTFd.lib.$("#challenge-id").val());
-    var submission = CTFd.lib.$("#challenge-input").val();
-
-    var body = {
-        challenge_id: challenge_id,
-        submission: submission
-    };
-    var params = {};
-    if (preview) {
-        params["preview"] = true;
-    }
-
-    return CTFd.api.post_challenge_attempt(params, body).then(function(response) {
-        if (response.status === 429) {
-            // User was ratelimited but process response
-            return response;
-        }
-        if (response.status === 403) {
-            // User is not logged in or CTF is paused.
-            return response;
-        }
-        return response;
-    });
 };
