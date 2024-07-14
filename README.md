@@ -23,12 +23,16 @@ The API must response with this following schema :
 
 ```json
 {
-    "status": "not_instanciated / instanciating / deleting / instanciated",
-    "instructions": ""
+    "status": "Stopped / Starting / Stopping / Running",
+    "server": {
+        "kind": "http / tcp",
+        "host": "google.com",
+        "port": "optional"
+    }
 }
 ```
 
-The `instructions` field is only used in `instanciated` mode to display connection instructions to the player.
+`port` is only set for tcp challenges. http challenges are served with https.
 
 ## Note
 
