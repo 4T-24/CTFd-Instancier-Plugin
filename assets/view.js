@@ -159,7 +159,19 @@ CTFd._internal.challenge.status_update = function(response) {
             window.instancier.deleting.hide();
             window.instancier.loaded.show();
 
-            let text = `Instance is running at https://${response.data.server.host}`;
+            let text = `Instance is running at : `;
+            for (let i = 0; i < response.data.servers; i++) {
+                server = response.data.servers[i];
+                if (i > 0) {
+                    text += ", ";
+                }
+
+                if (server.kind === "http") {
+                    text += `https://${server.host}`;
+                } else {
+                    text += `${server.host}:${server.port}`;
+                }
+            }
             window.instancier.instructions.text(text);
             break;
     }

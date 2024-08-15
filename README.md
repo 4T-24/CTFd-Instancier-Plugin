@@ -26,11 +26,17 @@ The API must response with this following schema :
 ```json
 {
     "status": "Stopped / Starting / Stopping / Running",
-    "server": {
-        "kind": "http / tcp",
-        "host": "google.com",
-        "port": "optional"
-    }
+    "servers": [
+        {
+            "kind": "http",
+            "host": "cdsfj.com"
+        },
+        {
+            "kind": "tcp",
+            "host": "cdsfj.com",
+            "port": "5656"
+        }
+    ]
 }
 ```
 
