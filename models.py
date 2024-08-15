@@ -1,44 +1,62 @@
 from flask import Blueprint
 
 from CTFd.models import Challenges, db
+from CTFd.plugins.dynamic_challenges import DynamicChallenge
+from CTFd.plugins.dynamic_challenges.decay import DECAY_FUNCTIONS, logarithmic
 from CTFd.plugins.challenges import BaseChallenge
 
-class InstanciatedChallenge(Challenges):
-    __mapper_args__ = {"polymorphic_identity": "instanciated"}
+class IDynamicChallenge(Challenges):
+    __mapper_args__ = {"polymorphic_identity": "i_dynamic"}
     id = db.Column(
         db.Integer, db.ForeignKey("challenges.id", ondelete="CASCADE"), primary_key=True
     )
-    challenge_slug = db.Column(db.String(32), default=0)
-
+    initial = db.Column(db.Integer, default=0)
+    minimum = db.Column(db.Integer, default=0)
+    decay = db.Column(db.Integer, default=0)
+    function = db.Column(db.String(32), default="logarithmic")
+    slug = db.Column(db.String(32))
+    is_instanced = db.Column(db.Boolean, default=False)
+    has_oracle = db.Column(db.Boolean, default=False)
+    
     def __init__(self, *args, **kwargs):
-        super(InstanciatedChallenge, self).__init__(**kwargs)
+        super(IDynamicChallenge, self).__init__(**kwargs)
+        self.value = kwargs["initial"]
 
 
-class InstanciatedValueChallenge(BaseChallenge):
-    id = "instanciated"  # Unique identifier used to register challenges
-    name = "instanciated"  # Name of a challenge type
+class IDynamicValueChallenge(BaseChallenge):
+    id = "i_dynamic"  # Unique identifier used to register challenges
+    name = "i_dynamic"  # Name of a challenge type
     templates = (
         {  # Handlebars templates used for each aspect of challenge editing & viewing
-            "create": "/plugins/instanciated_challenges/assets/create.html",
-            "update": "/plugins/instanciated_challenges/assets/update.html",
-            "view": "/plugins/instanciated_challenges/assets/view.html",
+            "create": "/plugins/i_challenges/assets/create.html",
+            "update": "/plugins/i_challenges/assets/update.html",
+            "view": "/plugins/i_challenges/assets/view.html",
         }
     )
     scripts = {  # Scripts that are loaded when a template is loaded
-        "create": "/plugins/instanciated_challenges/assets/create.js",
-        "update": "/plugins/instanciated_challenges/assets/update.js",
-        "view": "/plugins/instanciated_challenges/assets/view.js",
+        "create": "/plugins/i_challenges/assets/create.js",
+        "update": "/plugins/i_challenges/assets/update.js",
+        "view": "/plugins/i_challenges/assets/view.js",
     }
     # Route at which files are accessible. This must be registered using register_plugin_assets_directory()
-    route = "/plugins/instanciated_challenges/assets/"
+    route = "/plugins/i_challenges/assets/"
     # Blueprint used to access the static_folder directory.
     blueprint = Blueprint(
-        "instanciated_challenges",
+        "i_challenges",
         __name__,
         template_folder="templates",
         static_folder="assets",
     )
-    challenge_model = InstanciatedChallenge
+    challenge_model = IDynamicChallenge
+
+    @classmethod
+    def calculate_value(cls, challenge):
+        f = DECAY_FUNCTIONS.get(challenge.function, logarithmic)
+        value = f(challenge)
+
+        challenge.value = value
+        db.session.commit()
+        return challenge
 
     @classmethod
     def read(cls, challenge):
@@ -48,12 +66,16 @@ class InstanciatedValueChallenge(BaseChallenge):
         :param challenge:
         :return: Challenge object, data dictionary to be returned to the user
         """
-        challenge = InstanciatedChallenge.query.filter_by(
-            id=challenge.id).first()
+        challenge = IDynamicChallenge.query.filter_by(id=challenge.id).first()
         data = {
             "id": challenge.id,
             "name": challenge.name,
+            "slug": challenge.slug,
             "value": challenge.value,
+            "initial": challenge.initial,
+            "decay": challenge.decay,
+            "minimum": challenge.minimum,
+            "function": challenge.function,
             "description": challenge.description,
             "connection_info": challenge.connection_info,
             "next_id": challenge.next_id,
@@ -61,11 +83,14 @@ class InstanciatedValueChallenge(BaseChallenge):
             "state": challenge.state,
             "max_attempts": challenge.max_attempts,
             "type": challenge.type,
+            "is_instanced": challenge.is_instanced,
+            "has_oracle": challenge.has_oracle,
             "type_data": {
                 "id": cls.id,
                 "name": cls.name,
                 "templates": cls.templates,
                 "scripts": cls.scripts,
+                "slug": challenge.slug,
             },
         }
         return data
@@ -81,13 +106,17 @@ class InstanciatedValueChallenge(BaseChallenge):
         :return:
         """
         data = request.form or request.get_json()
+
         for attr, value in data.items():
+            # We need to set these to floats so that the next operations don't operate on strings
+            if attr in ("initial", "minimum", "decay"):
+                value = float(value)
             setattr(challenge, attr, value)
 
-        db.session.commit()
-        return challenge
+        return IDynamicValueChallenge.calculate_value(challenge)
 
     @classmethod
     def solve(cls, user, team, challenge, request):
         super().solve(user, team, challenge, request)
 
+        IDynamicValueChallenge.calculate_value(challenge)

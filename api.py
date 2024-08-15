@@ -35,15 +35,15 @@ from CTFd.utils.config.visibility import (
 from requests import get, post, delete
 from urllib.parse import urljoin
 
-from .models import InstanciatedChallenge
+from .models import IDynamicChallenge
 
 def api_routes(app):
     instancer_token = app.config.get("4TS_INSTANCER_TOKEN")
-    recaptcha_site_key = app.config.get("4TS_INSTANCER_RECAPTCHA_SITE_KEY")
+    # recaptcha_site_key = app.config.get("4TS_INSTANCER_RECAPTCHA_SITE_KEY")
     
-    @app.route("/api/v1/recaptcha_site_key", methods=['GET'])
-    def get_recaptcha_site_key():
-        return {"success": True, "data": {"site_key": recaptcha_site_key}}
+    # @app.route("/api/v1/recaptcha_site_key", methods=['GET'])
+    # def get_recaptcha_site_key():
+    #     return {"success": True, "data": {"site_key": recaptcha_site_key}}
     
     @app.route("/api/v1/challenges/<challenge_id>/instance", methods=['GET', 'POST', 'DELETE'])
     # @check_challenge_visibility
@@ -89,7 +89,7 @@ def api_routes(app):
             instance_id = team.id
         
         # Get instanciated Challenge
-        instanciated_challenge = InstanciatedChallenge.query.filter_by(id=challenge_id).first()
+        instanciated_challenge = IDynamicChallenge.query.filter_by(id=challenge_id).first()
 
         # Send request to instancer service at /api/v1/instanciate
         uri = urljoin(app.config.get("4TS_INSTANCER_BASE_URL"), f"/api/v1/{instanciated_challenge.challenge_slug}/{instance_id}")
@@ -128,7 +128,7 @@ def api_routes(app):
             instance_id = team.id
 
         # Get instanciated Challenge
-        instanciated_challenge = InstanciatedChallenge.query.filter_by(id=challenge_id).first()
+        instanciated_challenge = IDynamicChallenge.query.filter_by(id=challenge_id).first()
         
         # Send request to instancer service at /api/v1/instanciate
         response = post(
@@ -170,7 +170,7 @@ def api_routes(app):
             instance_id = team.id
 
         # Get instanciated Challenge
-        instanciated_challenge = InstanciatedChallenge.query.filter_by(id=challenge_id).first()
+        instanciated_challenge = IDynamicChallenge.query.filter_by(id=challenge_id).first()
         
         # Send request to instancer service at /api/v1/instanciate
         response = delete(

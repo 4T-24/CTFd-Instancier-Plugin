@@ -2,6 +2,7 @@
 
 Plugin that connects to an Instancier compatible API in order to instanciate challenges on CTFd.
 If the CTF is team based, instances will be per team.
+The plugin is should be placed in `i_challenges`.
 
 ## Installation
 

@@ -1,14 +1,82 @@
-{% extends "admin/challenges/update.html" %} {% block value %}
+{% extends "admin/challenges/update.html" %}
+
+{% block value %}
 <div class="form-group">
-    <label for="value">Value<br>
+	<label for="value">Current Value<br>
 		<small class="form-text text-muted">
-			This is how many points the challenge is worth.
+			This is how many points the challenge is worth right now.
 		</small>
 	</label>
-    <input type="number" class="form-control" name="value" placeholder="Enter value" required>
+	<input type="number" class="form-control chal-value" name="value" value="{{ challenge.value }}" disabled>
 </div>
+
 <div class="form-group">
-    <label for="value">Challenge Slug (for instancier)</label>
-    <input type="text" class="form-control" name="challenge_slug" placeholder="Enter challenge slug" required>
+	<label for="value">Initial Value<br>
+		<small class="form-text text-muted">
+			This is how many points the challenge was worth initially.
+		</small>
+	</label>
+	<input type="number" class="form-control chal-initial" name="initial" value="{{ challenge.initial }}" required>
+</div>
+
+<div class="form-group">
+	<label for="value">Decay Function<br>
+		<small class="form-text text-muted">
+			<span>How the dynamic value will be calculated based on the Decay value</span>
+			<ul>
+				<li>Linear: Calculated as <code>Initial - (Decay * SolveCount)</code></li>
+				<li>Logarithmic: Calculated as <code>(((Minimum - Initial) / (Decay^2)) * (SolveCount^2)) + Initial</code></li>
+			</ul>
+		</small>
+	</label>
+	<select name="function" class="custom-select">
+		<option value="linear" {% if challenge.function == "linear" %}selected{% endif %}>Linear</option>
+		<option value="logarithmic" {% if challenge.function == "logarithmic" %}selected{% endif %}>Logarithmic</option>
+	</select>
+</div>
+
+<div class="form-group">
+	<label for="value">Decay<br>
+		<small class="form-text text-muted">
+			<span>The decay value is used differently depending on the above Decay Function</span>
+			<ul>
+				<li>Linear: The amount of points deducted per solve. Equal deduction per solve.</li>
+				<li>Logarithmic: The amount of solves before the challenge reaches its minimum value. Earlier solves will lose less points. Later solves will lose more points</li>
+			</ul>
+		</small>
+	</label>
+	<input type="number" class="form-control chal-decay" min="1" name="decay" value="{{ challenge.decay }}" required>
+</div>
+
+<div class="form-group">
+	<label for="value">Minimum Value<br>
+		<small class="form-text text-muted">
+			This is the lowest that the challenge can be worth
+		</small>
+	</label>
+	<input type="number" class="form-control chal-minimum" name="minimum" value="{{ challenge.minimum }}" required>
+</div>
+
+<div class="form-group">
+    <label for="value">Challenge Slug (on k8s)</label>
+    <input type="text" class="form-control" name="slug" value="{{ challenge.slug }}" required>
+</div>
+
+<div class="form-group">
+    <label for="value">Is Challenge Instanced ?</label>
+	{% if challenge.is_instanced %} 
+    	<input type="checkbox" name="is_instanced" checked>
+	{% else %}
+		<input type="checkbox" name="is_instanced">
+	{% endif %}
+</div>
+
+<div class="form-group">
+    <label for="value">Has Oracle ?</label>
+	{% if challenge.is_instanced %} 
+    	<input type="checkbox" name="has_oracle" checked>
+	{% else %}
+		<input type="checkbox" name="has_oracle">
+	{% endif %}
 </div>
 {% endblock %}

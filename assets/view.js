@@ -50,46 +50,46 @@ CTFd._internal.challenge.setup = function() {
     window.instancier.update_instance_interval = setInterval(CTFd._internal.challenge.update_instance, 2500);
 
     window.instancier.instanciate_button.on("click", function(_event) {
-        grecaptcha.ready(function() {
-            var recaptcha_token = CTFd.lib.$("#recaptcha-token").val();
-            grecaptcha.execute(recaptcha_token, { action: 'submit' }).then(function(token) {
+        // grecaptcha.ready(function() {
+        //     var recaptcha_token = CTFd.lib.$("#recaptcha-token").val();
+        //     grecaptcha.execute(recaptcha_token, { action: 'submit' }).then(function(token) {
                 // Send a POST to /api/v1/challenges/<challenge_id>/instance
                 CTFd.fetch("/api/v1/challenges/" + challenge_id + "/instance", {
                     method: "POST",
                     headers: {
                         Accept: "application/json",
                     },
-                    body: JSON.stringify({
-                        recaptcha: token
-                    })
+                    // body: JSON.stringify({
+                    //     recaptcha: token
+                    // })
                 }).then(async function(response) {
                     json = await response.json();
                     CTFd._internal.challenge.status_update(json);
                 })
-            });
-        });
+        //     });
+        // });
     });
 
     window.instancier.uninstanciate_button.on("click", function(_event) {
         // Send a DELETE to /api/v1/challenges/<challenge_id>/instance
-        grecaptcha.ready(function() {
-            var recaptcha_token = CTFd.lib.$("#recaptcha-token").val();
-            grecaptcha.execute(recaptcha_token, { action: 'submit' }).then(function(token) {
+        // grecaptcha.ready(function() {
+        //     var recaptcha_token = CTFd.lib.$("#recaptcha-token").val();
+        //     grecaptcha.execute(recaptcha_token, { action: 'submit' }).then(function(token) {
                 // Send a DELETE to /api/v1/challenges/<challenge_id>/instance
                 CTFd.fetch("/api/v1/challenges/" + challenge_id + "/instance", {
                     method: "DELETE",
                     headers: {
                         Accept: "application/json",
                     },
-                    body: JSON.stringify({
-                        recaptcha: token
-                    })
+                    // body: JSON.stringify({
+                    //     recaptcha: token
+                    // })
                 }).then(async function(response) {
                     json = await response.json();
                     CTFd._internal.challenge.status_update(json);
                 })
-            });
-        });
+        //     });
+        // });
     });
 
     window.instance_challenge_submit = function(response) {
@@ -165,17 +165,17 @@ CTFd._internal.challenge.status_update = function(response) {
     }
 };
 
-CTFd.lib.$(document).ready(function() {
-    fetch('/api/v1/recaptcha_site_key')
-        .then(response => response.json())
-        .then(d => {
-            let token = d.data.site_key;
-            // add script into the recaptcha div
-            let script = document.createElement('script');
-            script.src = `https://www.google.com/recaptcha/api.js?render=${token}`;
-            document.getElementById('recaptcha').appendChild(script);
+// CTFd.lib.$(document).ready(function() {
+//     fetch('/api/v1/recaptcha_site_key')
+//         .then(response => response.json())
+//         .then(d => {
+//             let token = d.data.site_key;
+//             // add script into the recaptcha div
+//             let script = document.createElement('script');
+//             script.src = `https://www.google.com/recaptcha/api.js?render=${token}`;
+//             document.getElementById('recaptcha').appendChild(script);
 
-            // update recatcha token input
-            CTFd.lib.$("#recaptcha-token").val(token);
-        });
-});
+//             // update recatcha token input
+//             CTFd.lib.$("#recaptcha-token").val(token);
+//         });
+// });

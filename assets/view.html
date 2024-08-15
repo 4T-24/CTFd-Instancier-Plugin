@@ -1,14 +1,15 @@
 {% extends "challenge.html" %}{% block description %}
-<div id="recaptcha">
+<!-- <div id="recaptcha">
     <input id="recaptcha-token" type="hidden" value=''>
-</div>
+</div> -->
 
 <div class="container p-4">
     <div class="row justify-content-center">
         <div class="col-12">
             {{ challenge.html }}
         </div>
-
+        
+        {% if challenge.is_instanced %}
         <div class="d-flex justify-content-center">
             <div id="instanciate-button-container">
                 <!-- Add button to instanciate -->
@@ -43,6 +44,7 @@
                 </div>
             </div>
         </div>
+        {% endif %}
     </div>
 </div>
 
