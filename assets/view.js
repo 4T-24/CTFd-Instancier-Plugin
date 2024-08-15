@@ -160,7 +160,7 @@ CTFd._internal.challenge.status_update = function(response) {
             window.instancier.loaded.show();
 
             let text = `Instance is running at : `;
-            for (let i = 0; i < response.data.servers; i++) {
+            for (let i = 0; i < response.data.servers.length; i++) {
                 server = response.data.servers[i];
                 if (i > 0) {
                     text += ", ";

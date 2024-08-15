@@ -92,7 +92,7 @@ def api_routes(app):
         instanciated_challenge = IDynamicChallenge.query.filter_by(id=challenge_id).first()
 
         # Send request to instancer service at /api/v1/instanciate
-        uri = urljoin(app.config.get("4TS_INSTANCER_BASE_URL"), f"/api/v1/{instanciated_challenge.challenge_slug}/{instance_id}")
+        uri = urljoin(app.config.get("4TS_INSTANCER_BASE_URL"), f"/api/v1/{instanciated_challenge.slug}/{instance_id}")
         response = get(uri, headers={"Authorization": f"Bearer {instancer_token}"})
 
         return {"success": True, "data": response.json()}
@@ -132,9 +132,9 @@ def api_routes(app):
         
         # Send request to instancer service at /api/v1/instanciate
         response = post(
-            urljoin(app.config.get("4TS_INSTANCER_BASE_URL"), f"/api/v1/{instanciated_challenge.challenge_slug}/{instance_id}"),
+            urljoin(app.config.get("4TS_INSTANCER_BASE_URL"), f"/api/v1/{instanciated_challenge.slug}/{instance_id}"),
             headers={"Authorization": f"Bearer {instancer_token}"},
-            json=request.json
+            # json=request.json
         ).json()
 
         return {"success": True, "data": response}
@@ -174,9 +174,9 @@ def api_routes(app):
         
         # Send request to instancer service at /api/v1/instanciate
         response = delete(
-            urljoin(app.config.get("4TS_INSTANCER_BASE_URL"), f"/api/v1/{instanciated_challenge.challenge_slug}/{instance_id}"),
+            urljoin(app.config.get("4TS_INSTANCER_BASE_URL"), f"/api/v1/{instanciated_challenge.slug}/{instance_id}"),
             headers={"Authorization": f"Bearer {instancer_token}"},
-            json=request.json
+            # json=request.json
         ).json()
 
         return {"success": True, "data": response}
