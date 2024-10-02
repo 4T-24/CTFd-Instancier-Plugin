@@ -10,7 +10,7 @@ The plugin is should be placed in `i_challenges`.
 - Add the following values as environment variables or edit [CTFd/config.py](https://github.com/CTFd/CTFd/blob/master/CTFd/config.py) to add the following entries:
  - `4TS_INSTANCER_BASE_URL`: The base URI leading to your Instancier API
  - `4TS_INSTANCER_TOKEN`: A secret token to communicate with the Instancier API.
- - `4TS_INSTANCER_RECAPTCHA_SITE_KEY`: The recaptcha site key to avoid instance spam.
+ <!-- - `4TS_INSTANCER_RECAPTCHA_SITE_KEY`: The recaptcha site key to avoid instance spam. -->
 
 ## Instancier API
 
