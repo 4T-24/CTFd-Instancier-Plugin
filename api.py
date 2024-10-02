@@ -38,12 +38,13 @@ from urllib.parse import urljoin
 from .models import IDynamicChallenge
 
 def api_routes(app):
-    instancer_token = app.config.get("4TS_INSTANCER_TOKEN")
     # recaptcha_site_key = app.config.get("4TS_INSTANCER_RECAPTCHA_SITE_KEY")
     
     # @app.route("/api/v1/recaptcha_site_key", methods=['GET'])
     # def get_recaptcha_site_key():
     #     return {"success": True, "data": {"site_key": recaptcha_site_key}}
+
+    headers={"X-Ctfd-Auth": f"{app.config.get("4TS_INSTANCER_TOKEN")}"}
     
     @app.route("/api/v1/challenges/<challenge_id>/instance", methods=['GET', 'POST', 'DELETE'])
     # @check_challenge_visibility
@@ -93,7 +94,7 @@ def api_routes(app):
 
         # Send request to instancer service at /api/v1/instanciate
         uri = urljoin(app.config.get("4TS_INSTANCER_BASE_URL"), f"/api/v1/{instanciated_challenge.slug}/{instance_id}")
-        response = get(uri, headers={"Authorization": f"Bearer {instancer_token}"})
+        response = get(uri, headers=headers)
 
         return {"success": True, "data": response.json()}
 
@@ -133,7 +134,7 @@ def api_routes(app):
         # Send request to instancer service at /api/v1/instanciate
         response = post(
             urljoin(app.config.get("4TS_INSTANCER_BASE_URL"), f"/api/v1/{instanciated_challenge.slug}/{instance_id}"),
-            headers={"Authorization": f"Bearer {instancer_token}"},
+            headers=headers,
             # json=request.json
         ).json()
 
@@ -175,7 +176,7 @@ def api_routes(app):
         # Send request to instancer service at /api/v1/instanciate
         response = delete(
             urljoin(app.config.get("4TS_INSTANCER_BASE_URL"), f"/api/v1/{instanciated_challenge.slug}/{instance_id}"),
-            headers={"Authorization": f"Bearer {instancer_token}"},
+            headers=headers,
             # json=request.json
         ).json()
 
