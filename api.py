@@ -95,6 +95,10 @@ def api_routes(app):
         # Send request to instancer service at /api/v1/instanciate
         uri = urljoin(app.config.get("4TS_INSTANCER_BASE_URL"), f"/api/v1/{instanciated_challenge.slug}/{instance_id}")
         response = get(uri, headers=headers)
+        if response.status_code != 200:
+            # Log error
+            app.logger.error(f"Failed to get instance for challenge {challenge_id} with status code {response.status_code}")
+            return {"success": False}
 
         return {"success": True, "data": response.json()}
 
@@ -137,6 +141,10 @@ def api_routes(app):
             headers=headers,
             # json=request.json
         ).json()
+        if response.status_code != 200:
+            # Log error
+            app.logger.error(f"Failed to start instance for challenge {challenge_id} with status code {response.status_code}")
+            return {"success": False}
 
         return {"success": True, "data": response}
 
@@ -179,5 +187,9 @@ def api_routes(app):
             headers=headers,
             # json=request.json
         ).json()
+        if response.status_code != 200:
+            # Log error
+            app.logger.error(f"Failed to stop instance for challenge {challenge_id} with status code {response.status_code}")
+            return {"success": False}
 
         return {"success": True, "data": response}
