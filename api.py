@@ -44,7 +44,8 @@ def api_routes(app):
     # def get_recaptcha_site_key():
     #     return {"success": True, "data": {"site_key": recaptcha_site_key}}
 
-    headers={"X-Ctfd-Auth": f"{app.config.get("4TS_INSTANCER_TOKEN")}"}
+    token = app.config.get("4TS_INSTANCER_TOKEN")
+    headers={"X-Ctfd-Auth": token}
     
     @app.route("/api/v1/challenges/<challenge_id>/instance", methods=['GET', 'POST', 'DELETE'])
     # @check_challenge_visibility
