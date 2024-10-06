@@ -197,7 +197,7 @@ def api_routes(app):
     
     
     @app.route("/api/v1/date", methods=['GET'])
-    def get_ctf_date(challenge_id):
+    def get_ctf_date():
         ctf_start = config.get_config("start")
         if ctf_start:
             ctf_start = isoformat(unix_time_to_utc(int(ctf_start)))
