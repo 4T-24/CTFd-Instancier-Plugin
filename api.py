@@ -8,7 +8,7 @@ from CTFd.utils import config
 from flask_restx import Resource
 from sqlalchemy.sql import and_
 from CTFd.utils.security.signing import serialize
-from CTFd.utils.dates import ctf_ended
+from CTFd.utils.dates import isoformat, unix_time_to_utc, ctf_ended
 from CTFd.utils.challenges import (
     get_solve_counts_for_challenges,
     get_solve_ids_for_user_id,
@@ -194,3 +194,20 @@ def api_routes(app):
             return {"success": False}
 
         return {"success": True, "data": response}
+    
+    
+    @app.route("/api/v1/date", methods=['GET'])
+    def get_ctf_date(challenge_id):
+        ctf_start = config.get_config("start")
+        if ctf_start:
+            ctf_start = isoformat(unix_time_to_utc(int(ctf_start)))
+
+        ctf_end = config.get_config("end")
+        if ctf_end:
+            ctf_end = isoformat(unix_time_to_utc(int(ctf_end)))
+
+        ctf_freeze = config.get_config("freeze")
+        if ctf_freeze:
+            ctf_freeze = isoformat(unix_time_to_utc(int(ctf_freeze)))
+
+        return {"success": True, "data": {"start": ctf_start, "end": ctf_end, "freeze": ctf_freeze}}
