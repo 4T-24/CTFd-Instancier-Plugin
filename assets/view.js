@@ -2,6 +2,7 @@ window.instancier = {
     instanciate_button_container: null,
     instanciate_button: null,
     uninstanciate_button: null,
+    oracle_button: null,
     loading: null,
     deleting: null,
     loaded: null,
@@ -37,6 +38,7 @@ CTFd._internal.challenge.setup = function() {
     window.instancier.instanciate_button_container = CTFd.lib.$("#instanciate-button-container");
     window.instancier.instanciate_button = CTFd.lib.$("#instanciate-button");
     window.instancier.uninstanciate_button = CTFd.lib.$("#uninstanciate-button");
+    window.instancier.oracle_button = CTFd.lib.$("#oracle-button");
     window.instancier.loading = CTFd.lib.$("#instanciate-loading");
     window.instancier.deleting = CTFd.lib.$("#instanciate-deleting");
     window.instancier.loaded = CTFd.lib.$("#instanciate-loaded");
@@ -91,6 +93,17 @@ CTFd._internal.challenge.setup = function() {
         //     });
         // });
     });
+
+    window.instancier.oracle_button.on("click", function(_event) {
+        // Send a GET to /api/v1/challenges/<challenge_id>/instance/check_solved
+        CTFd.fetch("/api/v1/challenges/" + challenge_id + "/instance/check_solved", {
+            method: "GET",
+            headers: {
+                Accept: "application/json",
+            }
+        })
+    });
+
 
     window.instance_challenge_submit = function(response) {
         if (response.data.status === "correct") {

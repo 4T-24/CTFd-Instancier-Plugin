@@ -41,6 +41,11 @@
                     <button id="uninstanciate-button" class="btn btn-primary">
                         Delete instance
                     </button>
+                    {% if challenge.has_oracle %}
+                        <button id="oracle-button" class="btn btn-primary">
+                            Flag challenge
+                        </button>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -48,10 +53,19 @@
     </div>
 </div>
 
-{% endblock %} {% block submit %}
-<button id="challenge-submit" class="challenge-submit btn btn-outline-secondary w-100 h-100" type="submit" @click.debounce.500ms="submitChallenge().then(() => window.instance_challenge_submit(response));">
-  {% trans %}Submit{% endtrans %}
-</button> {% endblock %} {% block input %}
-<input id="challenge-id" class="challenge-id" type="hidden" value="{{ challenge.id }}">
-<input id="challenge-input" class="challenge-input form-control" type="text" name="submission" @keyup.enter="submitChallenge().then(() => window.instance_challenge_submit(response));" placeholder="{% trans %}Flag{% endtrans %}" x-model="submission"> {%
-endblock %}
+{% endblock %} 
+
+{% block submit %}
+    {% if !challenge.has_oracle %}
+        <button id="challenge-submit" class="challenge-submit btn btn-outline-secondary w-100 h-100" type="submit" @click.debounce.500ms="submitChallenge().then(() => window.instance_challenge_submit(response));">
+        {% trans %}Submit{% endtrans %}
+        </button> 
+    {% endif %}
+{% endblock %} 
+
+{% block input %}
+    <input id="challenge-id" class="challenge-id" type="hidden" value="{{ challenge.id }}">
+    {% if !challenge.has_oracle %}
+        <input id="challenge-input" class="challenge-input form-control" type="text" name="submission" @keyup.enter="submitChallenge().then(() => window.instance_challenge_submit(response));" placeholder="{% trans %}Flag{% endtrans %}" x-model="submission"> 
+    {% endif %}
+{%endblock %}
