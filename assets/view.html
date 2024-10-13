@@ -56,7 +56,7 @@
 {% endblock %} 
 
 {% block submit %}
-    {% if !challenge.has_oracle %}
+    {% if challenge.has_oracle == False %}
         <button id="challenge-submit" class="challenge-submit btn btn-outline-secondary w-100 h-100" type="submit" @click.debounce.500ms="submitChallenge().then(() => window.instance_challenge_submit(response));">
         {% trans %}Submit{% endtrans %}
         </button> 
@@ -65,7 +65,7 @@
 
 {% block input %}
     <input id="challenge-id" class="challenge-id" type="hidden" value="{{ challenge.id }}">
-    {% if !challenge.has_oracle %}
+    {% if challenge.has_oracle == False %}
         <input id="challenge-input" class="challenge-input form-control" type="text" name="submission" @keyup.enter="submitChallenge().then(() => window.instance_challenge_submit(response));" placeholder="{% trans %}Flag{% endtrans %}" x-model="submission"> 
     {% endif %}
 {%endblock %}
