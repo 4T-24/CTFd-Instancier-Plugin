@@ -4,6 +4,16 @@ from CTFd.models import Challenges, db
 from CTFd.plugins.dynamic_challenges import DynamicChallenge
 from CTFd.plugins.dynamic_challenges.decay import DECAY_FUNCTIONS, logarithmic
 from CTFd.plugins.challenges import BaseChallenge
+from urllib.parse import urljoin
+from CTFd.utils.user import (
+    authed,
+    get_current_team,
+    get_current_user,
+    is_admin,
+)
+from CTFd.utils import config
+from requests import get
+from .store import retrieve
 
 class IDynamicChallenge(Challenges):
     __mapper_args__ = {"polymorphic_identity": "i_dynamic"}
@@ -120,3 +130,32 @@ class IDynamicValueChallenge(BaseChallenge):
         super().solve(user, team, challenge, request)
 
         IDynamicValueChallenge.calculate_value(challenge)
+    
+    @classmethod
+    def attempt(cls, challenge, request):
+        app = retrieve("app")
+        token = app.config.get("4TS_INSTANCER_TOKEN")
+        headers={"X-Ctfd-Auth": token}
+        challenge = IDynamicChallenge.query.filter_by(id=challenge.id).first()
+
+        
+        user = get_current_user()
+        instance_id = user.id
+
+        # Check if this is an oracle challenge
+        if challenge.has_oracle:
+            data = request.form or request.get_json()
+            submission = data["submission"].strip()
+            if submission == "":
+                uri = urljoin(app.config.get("4TS_INSTANCER_BASE_URL"), f"/api/v1/{challenge.slug}/{instance_id}/is_solved")
+                try:
+                    response = get(uri, headers=headers)
+                    if "true" in response.text:
+                        return True, "Challenge is solved !"
+                    else:
+                        return False, "Challenge is not solved"
+                except:
+                    return False, "Failed to fetch status of challenge"
+            else:
+                return False, "Nuh-Uh"
+            

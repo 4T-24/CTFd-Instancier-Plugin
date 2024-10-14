@@ -5,9 +5,12 @@ from CTFd.plugins.migrations import upgrade
 from .api import api_routes
 from .config import config
 from .models import IDynamicValueChallenge
+from .store import store
 
 def load(app):
     config(app)
+
+    store("app", app)
     
     upgrade(plugin_name="i_challenges")
     

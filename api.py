@@ -1,14 +1,15 @@
 from flask import render_template
 from flask import abort, request, render_template, url_for
 from CTFd.models import Challenges
-from CTFd.models import Hints, HintUnlocks, Solves, Submissions, db
+from CTFd.models import Fails, Hints, HintUnlocks, Solves, Submissions, db
 from CTFd.schemas.tags import TagSchema
 from CTFd.plugins.challenges import get_chal_class
 from CTFd.utils import config
 from flask_restx import Resource
+from CTFd.utils import user as current_user, get_config
 from sqlalchemy.sql import and_
 from CTFd.utils.security.signing import serialize
-from CTFd.utils.dates import isoformat, unix_time_to_utc, ctf_ended
+from CTFd.utils.dates import isoformat, unix_time_to_utc, ctf_ended, ctftime
 from CTFd.utils.challenges import (
     get_solve_counts_for_challenges,
     get_solve_ids_for_user_id,
@@ -20,6 +21,7 @@ from CTFd.utils.decorators import (
     during_ctf_time_only,
     require_verified_emails,
 )
+from CTFd.utils.logging import log
 from CTFd.utils.user import (
     authed,
     get_current_team,
@@ -46,56 +48,6 @@ def api_routes(app):
 
     token = app.config.get("4TS_INSTANCER_TOKEN")
     headers={"X-Ctfd-Auth": token}
-
-    
-    @app.route("/api/v1/challenges/<challenge_id>/instance/check_solved", methods=['GET'])
-    # @check_challenge_visibility
-    # @during_ctf_time_only
-    # @require_verified_emails
-    def check_solved(challenge_id):
-        if not authed():
-            abort(403)
-
-        if is_admin():
-            chal = Challenges.query.filter(
-                Challenges.id == challenge_id).first_or_404()
-        else:
-            chal = Challenges.query.filter(
-                Challenges.id == challenge_id,
-                and_(Challenges.state != "hidden",
-                        Challenges.state != "locked"),
-            ).first_or_404()
-
-        try:
-            chal_class = get_chal_class(chal.type)
-        except KeyError:
-            abort(
-                500,
-                f"The underlying challenge type ({chal.type}) is not installed. This challenge can not be loaded.",
-            )
-        
-        user = get_current_user()
-        instance_id = user.id
-        # Check if CTFd is in team mode, if so, get the team's id
-        if config.is_teams_mode():
-            team = get_current_team()
-            instance_id = team.id
-        
-        # Get instanciated Challenge
-        instanciated_challenge = IDynamicChallenge.query.filter_by(id=challenge_id).first()
-
-        # Send request to instancer service at /api/v1/instanciate
-        uri = urljoin(app.config.get("4TS_INSTANCER_BASE_URL"), f"/api/v1/{instanciated_challenge.slug}/{instance_id}/is_solved")
-        response = get(uri, headers=headers)
-        if response.status_code != 200:
-            # Log error
-            app.logger.error(f"Failed to check solved for challenge {challenge_id} with status code {response.status_code}")
-            return {"success": False}
-        
-        # Mark challenge as solved
-        chal_class.solve(user=user, team=team, challenge=chal, request=request)
-
-        return {"success": True, "data": response.json()}
     
     @app.route("/api/v1/challenges/<challenge_id>/instance", methods=['GET', 'POST', 'DELETE'])
     # @check_challenge_visibility
@@ -135,23 +87,20 @@ def api_routes(app):
 
         user = get_current_user()
         instance_id = user.id
-        # Check if CTFd is in team mode, if so, get the team's id
-        if config.is_teams_mode():
-            team = get_current_team()
-            instance_id = team.id
         
         # Get instanciated Challenge
         instanciated_challenge = IDynamicChallenge.query.filter_by(id=challenge_id).first()
 
         # Send request to instancer service at /api/v1/instanciate
         uri = urljoin(app.config.get("4TS_INSTANCER_BASE_URL"), f"/api/v1/{instanciated_challenge.slug}/{instance_id}")
-        response = get(uri, headers=headers)
-        if response.status_code != 200:
+
+        try:
+            response = get(uri, headers=headers)
+            return {"success": True, "data": response.json()}
+        except:
             # Log error
             app.logger.error(f"Failed to get instance for challenge {challenge_id} with status code {response.status_code}")
             return {"success": False}
-
-        return {"success": True, "data": response.json()}
 
 
     def start_instance(challenge_id):
@@ -178,26 +127,24 @@ def api_routes(app):
 
         user = get_current_user()
         instance_id = user.id
-        # Check if CTFd is in team mode, if so, get the team's id
-        if config.is_teams_mode():
-            team = get_current_team()
-            instance_id = team.id
 
         # Get instanciated Challenge
         instanciated_challenge = IDynamicChallenge.query.filter_by(id=challenge_id).first()
         
         # Send request to instancer service at /api/v1/instanciate
-        response = post(
-            urljoin(app.config.get("4TS_INSTANCER_BASE_URL"), f"/api/v1/{instanciated_challenge.slug}/{instance_id}"),
-            headers=headers,
-            # json=request.json
-        ).json()
-        if response.status_code != 200:
+        try:
+            response = post(
+                urljoin(app.config.get("4TS_INSTANCER_BASE_URL"), f"/api/v1/{instanciated_challenge.slug}/{instance_id}"),
+                headers=headers,
+                # json=request.json
+            ).json()
+            
+            return {"success": True, "data": response}
+        except:
             # Log error
             app.logger.error(f"Failed to start instance for challenge {challenge_id} with status code {response.status_code}")
             return {"success": False}
 
-        return {"success": True, "data": response}
 
 
     def stop_instance(challenge_id):
@@ -224,27 +171,23 @@ def api_routes(app):
 
         user = get_current_user()
         instance_id = user.id
-        # Check if CTFd is in team mode, if so, get the team's id
-        if config.is_teams_mode():
-            team = get_current_team()
-            instance_id = team.id
 
         # Get instanciated Challenge
         instanciated_challenge = IDynamicChallenge.query.filter_by(id=challenge_id).first()
         
         # Send request to instancer service at /api/v1/instanciate
-        response = delete(
-            urljoin(app.config.get("4TS_INSTANCER_BASE_URL"), f"/api/v1/{instanciated_challenge.slug}/{instance_id}"),
-            headers=headers,
-            # json=request.json
-        ).json()
-        if response.status_code != 200:
+        try:
+            response = delete(
+                urljoin(app.config.get("4TS_INSTANCER_BASE_URL"), f"/api/v1/{instanciated_challenge.slug}/{instance_id}"),
+                headers=headers,
+                # json=request.json
+            ).json()
+
+            return {"success": True, "data": response}
+        except:
             # Log error
             app.logger.error(f"Failed to stop instance for challenge {challenge_id} with status code {response.status_code}")
             return {"success": False}
-
-        return {"success": True, "data": response}
-    
     
     @app.route("/api/v1/date", methods=['GET'])
     def get_ctf_date():
