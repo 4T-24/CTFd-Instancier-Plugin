@@ -130,6 +130,9 @@ def api_routes(app):
 
         # Get instanciated Challenge
         instanciated_challenge = IDynamicChallenge.query.filter_by(id=challenge_id).first()
+
+        if not instanciated_challenge.is_instanced:
+            return {"success": False, "message": "This challenge is not instanced"}
         
         # Send request to instancer service at /api/v1/instanciate
         try:
