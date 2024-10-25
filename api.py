@@ -99,7 +99,7 @@ def api_routes(app):
             return {"success": True, "data": response.json()}
         except:
             # Log error
-            app.logger.error(f"Failed to get instance for challenge {challenge_id} with status code {response.status_code}")
+            app.logger.error(f"Failed to get instance for challenge {challenge_id}")
             return {"success": False}
 
 
@@ -145,7 +145,7 @@ def api_routes(app):
             return {"success": True, "data": response}
         except:
             # Log error
-            app.logger.error(f"Failed to start instance for challenge {challenge_id} with status code {response.status_code}")
+            app.logger.error(f"Failed to start instance for challenge {challenge_id}")
             return {"success": False}
 
 
@@ -189,7 +189,33 @@ def api_routes(app):
             return {"success": True, "data": response}
         except:
             # Log error
-            app.logger.error(f"Failed to stop instance for challenge {challenge_id} with status code {response.status_code}")
+            app.logger.error(f"Failed to stop instance for challenge {challenge_id}")
+            return {"success": False}
+        
+        
+    @app.route("/api/v1/i/token", methods=['GET'])
+    # @check_challenge_visibility
+    # @during_ctf_time_only
+    # @require_verified_emails
+    def get_i_token():
+        user = get_current_user()
+        instance_id = user.id
+        
+        # Send request to instancer service at /api/v1/token/instance_id
+        try:
+            response = delete(
+                urljoin(app.config.get("4TS_INSTANCER_BASE_URL"), f"/api/v1/token/{instance_id}"),
+                headers=headers,
+            ).text
+
+            return {"success": True, "data": {
+                "token": response,
+                "instance_id": instance_id,
+                "instancer_base_url": app.config.get("4TS_INSTANCER_BASE_URL")
+            }}
+        except:
+            # Log error
+            app.logger.error(f"Failed to get instance_id token")
             return {"success": False}
     
     @app.route("/api/v1/date", methods=['GET'])
