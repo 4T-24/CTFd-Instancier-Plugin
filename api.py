@@ -203,16 +203,19 @@ def api_routes(app):
         
         # Send request to instancer service at /api/v1/token/instance_id
         try:
-            response = delete(
+            response = get(
                 urljoin(app.config.get("4TS_INSTANCER_BASE_URL"), f"/api/v1/token/{instance_id}"),
                 headers=headers,
-            ).text
+            )
 
-            return {"success": True, "data": {
-                "token": response,
-                "instance_id": instance_id,
-                "instancer_base_url": app.config.get("4TS_INSTANCER_BASE_URL")
-            }}
+            if response.status_code == 200:
+                return {"success": True, "data": {
+                    "token": response,
+                    "instance_id": instance_id,
+                    "instancer_base_url": app.config.get("4TS_INSTANCER_BASE_URL")
+                }}
+            else:
+                return {"success": False}
         except:
             # Log error
             app.logger.error(f"Failed to get instance_id token")
