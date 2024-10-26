@@ -158,4 +158,6 @@ class IDynamicValueChallenge(BaseChallenge):
                     return False, "Failed to fetch status of challenge"
             else:
                 return False, "Nuh-Uh"
+        else:
+            return super().attempt(challenge, request)
             
