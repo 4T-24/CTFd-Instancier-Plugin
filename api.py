@@ -198,6 +198,9 @@ def api_routes(app):
     # @during_ctf_time_only
     # @require_verified_emails
     def get_i_token():
+        if not authed():
+            abort(403)
+            
         user = get_current_user()
         instance_id = user.id
         
@@ -210,7 +213,7 @@ def api_routes(app):
 
             if response.status_code == 200:
                 return {"success": True, "data": {
-                    "token": response,
+                    "token": response.text,
                     "instance_id": instance_id,
                     "instancer_base_url": app.config.get("4TS_INSTANCER_BASE_URL")
                 }}
