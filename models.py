@@ -144,20 +144,15 @@ class IDynamicValueChallenge(BaseChallenge):
 
         # Check if this is an oracle challenge
         if challenge.has_oracle:
-            data = request.form or request.get_json()
-            submission = data["submission"].strip()
-            if submission == "":
-                uri = urljoin(app.config.get("4TS_INSTANCER_BASE_URL"), f"/api/v1/{challenge.slug}/{instance_id}/is_solved")
-                try:
-                    response = get(uri, headers=headers)
-                    if "true" in response.text:
-                        return True, "Challenge is solved !"
-                    else:
-                        return False, "Challenge is not solved"
-                except:
-                    return False, "Failed to fetch status of challenge"
-            else:
-                return False, "Nuh-Uh"
+            uri = urljoin(app.config.get("4TS_INSTANCER_BASE_URL"), f"/api/v1/{challenge.slug}/{instance_id}/is_solved")
+            try:
+                response = get(uri, headers=headers)
+                if "true" in response.text:
+                    return True, "Challenge is solved !"
+                else:
+                    return False, "Challenge is not solved"
+            except:
+                return False, "Failed to fetch status of challenge"
         else:
             return super().attempt(challenge, request)
             

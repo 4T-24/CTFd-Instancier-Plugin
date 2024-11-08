@@ -50,9 +50,9 @@ def api_routes(app):
     headers={"X-Ctfd-Auth": token}
     
     @app.route("/api/v1/challenges/<challenge_id>/instance", methods=['GET', 'POST', 'DELETE'])
-    # @check_challenge_visibility
-    # @during_ctf_time_only
-    # @require_verified_emails
+    @check_challenge_visibility
+    @during_ctf_time_only
+    @require_verified_emails
     def handle_routes(challenge_id):
         if request.method == 'GET':
             return get_instance(challenge_id)
@@ -194,9 +194,9 @@ def api_routes(app):
         
         
     @app.route("/api/v1/i/token", methods=['GET'])
-    # @check_challenge_visibility
-    # @during_ctf_time_only
-    # @require_verified_emails
+    @check_challenge_visibility
+    @during_ctf_time_only
+    @require_verified_emails
     def get_i_token():
         if not authed():
             abort(403)
